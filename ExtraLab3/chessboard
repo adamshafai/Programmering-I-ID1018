@@ -1,0 +1,756 @@
+package ExtraLab3;
+public class Chessboard {
+
+	public static class Field {
+		private char row;
+		private byte column;
+		private Chesspiece piece = null;
+		private boolean marked = false;
+
+		public Field(char row, byte column) {
+			this.row = row;
+			this.column = column;
+		}
+
+		public void put(Chesspiece piece) {
+			this.piece = piece;
+			marked = true;
+		}
+
+		public Chesspiece take() {
+			marked = false;
+			Chesspiece piece1 = this.piece;
+			this.piece = null;
+			return piece1;
+		}
+
+		public void mark() {
+			marked = true;
+		}
+
+		public void unmark() {
+			marked = false;
+		}
+
+		public String toString() {
+			String s = (marked) ? "xx" : "--";
+			return (piece == null) ? s : piece.toString();
+		}
+
+	}
+
+	public static final int NUMBER_OF_ROWS = 8;
+	public static final int NUMBER_OF_COLUMNS = 8;
+	public static final int FIRST_ROW = 'a';
+	public static final int FIRST_COLUMN = 1;
+	private Field[][] fields;
+
+	public Chessboard() {
+
+		fields = new Field[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+		char row = 0;
+		byte column = 0;
+		for (int r = 0; r < NUMBER_OF_ROWS; r++) {
+			row = (char) (FIRST_ROW - r);
+			column = FIRST_COLUMN;
+			for (int c = 0; c < NUMBER_OF_COLUMNS; c++) {
+				fields[r][c] = new Field(row, column);
+				column++;
+			}
+
+		}
+	}
+
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		//string representation of the column from 1 to 7 in the chessboard
+		for (int c = 0; c <= 8; c++){
+
+			sb.append("  "+c);
+		}
+		//string representation of the row from a to h in the chessboard
+		sb.append("\n");
+		for (int r = 0; r < 8; r++) {
+			char row = (char)(FIRST_ROW + r);
+			sb.append("  "+row);
+			for (int c = 0; c <= 7; c ++) {
+
+				sb.append(" ");
+				sb.append(fields[r][c].toString());
+			}
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
+
+	public boolean isValidField(char row, byte column) {
+
+		int r = row - FIRST_ROW;
+		int c = column - FIRST_COLUMN;
+		if ((row < 'a' && row > 'h') && (column < 1 && column > 8)
+				
+		&&fields[r][c].marked == true) {
+			return false;
+		} else {
+			return true;
+		}
+
+	}
+/********************* The ChessPiece Class Strts***************************/
+
+	public abstract class Chesspiece {
+		private char color; // w - white, b - black
+		private char name;
+		// K - King, Q - Queen,
+		// P – Pawn
+		protected char row = 0;
+		protected byte column = -1;
+
+		protected Chesspiece(char color, char name) {
+			this.color = color;
+			this.name = name;
+		}
+
+		public String toString() {
+			return "" + color + name;
+		}
+
+		public boolean isOnBoard() {
+			return Chessboard.this.isValidField(row, column);
+		}
+
+		public void moveTo(char row, byte column) throws NotValidFieldException {
+
+			if (!Chessboard.this.isValidField(row, column))
+				throw new NotValidFieldException("bad field: " + row + column);
+
+			this.row = row;
+			this.column = column;
+
+			int r = row - FIRST_ROW;
+			int c = column - FIRST_COLUMN;
+
+			Chessboard.this.fields[r][c].put(this);
+		}
+
+		public void moveOut(char row, byte column) {
+			this.row = row;
+			this.column = column;
+
+			int r = row - FIRST_ROW;
+			int c = column - FIRST_COLUMN;
+			Chessboard.this.fields[r][c].take();
+		}
+
+		public abstract void markReachableFields();
+
+		public abstract void unmarkReachableFields();
+
+	}
+/************************The Pawn Class Strts*************************************/
+
+
+	public class Pawn extends Chesspiece {
+
+		protected Pawn(char color, char name) {
+			super(color, name);
+		}
+
+		public void markReachableFields() {
+			byte col = (byte) (column + 1);
+
+			if ((row >= 'a' && row <= 'h') && (col >= 1 && col <= 8)
+					&&Chessboard.this.isValidField(row, col)){
+				int r = row - FIRST_ROW;
+				int c = col - FIRST_COLUMN;
+				Chessboard.this.fields[r][c].mark();
+			}
+		}
+
+		public void unmarkReachableFields() {
+			byte col = (byte) (column + 1);
+			if ((row >= 'a' && row <= 'h') && (col >= 1 && col <= 8)
+					&&Chessboard.this.isValidField(row, col)){
+				int r = row - FIRST_ROW;
+				int c = col - FIRST_COLUMN;
+				Chessboard.this.fields[r][c].unmark();
+			}
+		}
+	}
+
+
+/******************* The Knight Class Strts here**********************************/
+
+	public class Knight extends Chesspiece {
+
+		protected Knight(char color, char name) {
+			super(color, name);
+		}
+
+		@Override
+		public void markReachableFields() {
+
+			for (int i = 0; i < 8; i++) {
+				char rw = row;
+				byte col = column;
+				switch (i) {
+				case 0:
+					rw = (char)(rw - 2);
+					col = (byte)(col +1);
+					break;
+				case 1:
+					rw = (char)(rw - 1);
+					col = (byte)(col + 2);
+					break;
+				case 2:
+					rw = (char)(rw + 1);
+					col = (byte)(col + 2);
+					break;
+				case 3:
+					rw =(char)(rw + 2);
+					col =(byte)(col + 1);
+					break;
+				case 4:
+					rw =(char)(rw + 2);
+					col =(byte)(col - 1);
+					break;
+				case 5:
+					rw =(char)(rw + 1);
+					col =(byte)(col - 2);
+					break;
+				case 6:
+					rw =(char)(rw - 1);
+					col =(byte)(col - 2);
+
+					break;
+				case 7:
+					rw =(char)(rw - 2);
+					col =(byte)(col - 1);
+					break;
+				}		
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+
+				}
+			}
+		}
+
+
+		@Override
+		public void unmarkReachableFields() {
+
+
+			for (int i = 0; i < 8; i++) {
+				char rw = row;
+				byte col = column;
+				switch (i) {
+				case 0:
+					rw = (char)(rw - 2);
+					col = (byte)(col + 1);
+					break;
+				case 1:
+					rw = (char)(rw - 1);
+					col = (byte)(col + 2);
+					break;
+				case 2:
+					rw = (char)(rw + 1);
+					col = (byte)(col + 2);
+					break;
+				case 3:
+					rw =(char)(rw + 2);
+					col =(byte)(col + 1);
+					break;
+				case 4:
+					rw =(char)(rw + 2);
+					col =(byte)(col - 1);
+					break;
+				case 5:
+					rw =(char)(rw + 1);
+					col =(byte)(col - 2);
+					break;
+				case 6:
+					rw =(char)(rw - 1);
+					col =(byte)(col - 2);
+
+					break;
+				case 7:
+					rw =(char)(rw - 2);
+					col =(byte)(col - 1);
+					break;
+				}
+
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){		
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+
+				}
+			}
+		}
+	}
+
+
+/************************The ROOK Class Strts**************************************/
+
+	public class Rook extends Chesspiece {
+		protected Rook(char color, char name) {
+			super(color, name);
+		}
+
+
+		public void markReachableFields() {
+
+			byte col = column;
+			char rw;
+			for (char i = FIRST_ROW; i <='h' ; i++) {
+				rw = i;
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+				}
+			}
+			rw = row;
+			for (byte j = 1; j <= 8; j++) {
+				col = j;
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 7)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+				}
+			}
+		}
+
+
+
+		public void unmarkReachableFields() {
+
+			byte col = column;
+			char rw;
+			for (char i = 'a'; i <= 'h'; i++) {
+				rw = i;
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+				}
+			}
+			rw = row;
+			for (byte j = 1; j <= 8; j++) {
+				col = j;
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+				}
+			}
+		}
+	}
+
+
+
+/**************************The Bishop Class Strts**********************************/
+
+	public class Bishop extends Chesspiece {
+
+		protected Bishop(char color, char name) { 
+			super(color, name);
+		}
+
+		@Override 
+		public void markReachableFields() {
+			char rw = row;
+			byte col = column;
+			for (int i = 0; i < 8; i++) {
+				rw = (char)(rw - 1);
+				col = (byte)(col + 1);
+				
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+				}
+			}
+			rw = row;
+			col = column;
+
+			for (int i = 1; i <= 8; i++) {
+				rw = (char)(rw + 1);
+				col = (byte)(col + 1);
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+				}
+			}
+			 rw = row;
+			 col = column;
+
+			for (int i = 1; i <= 8; i++) {
+				rw = (char)(rw + 1);
+				col = (byte)(col - 1);
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+				}
+			}
+
+			 rw = row;
+			 col = column;
+			for (int i = 1; i <= 8; i++) {
+				rw = (char)(rw - 1);
+				col = (byte)(col - 1);
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+
+				}
+			}	
+		}
+
+		@Override 
+		public void unmarkReachableFields() {
+			char rw = row;
+			byte col = column;
+			for (int i = 0; i < 8; i++) {
+				rw = (char)(rw - 1);
+				col = (byte)(col + 1);
+				
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+				}
+			}
+			rw = row;
+			col = column;
+
+			for (int i = 1; i <= 8; i++) {
+				rw = (char)(rw + 1);
+				col = (byte)(col + 1);
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+				}
+			}
+			rw = row;
+			col = column;
+
+			for (int i = 1; i <= 8; i++) {
+				rw = (char)(rw + 1);
+				col = (byte)(col - 1);
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+				}
+			}
+			rw = row;
+			col = column;
+
+			for (int i = 1; i <= 8; i++) {
+				rw = (char)(rw - 1);
+				col = (byte)(col - 1);
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+
+				}
+			}
+		}
+	}
+	
+	/**********************The Queen Class Strts**********************************/
+	public class Queen extends Chesspiece {
+
+		protected Queen(char color, char name) { 
+			super(color, name);
+		}
+
+		@Override 
+		public void markReachableFields() { 
+			char rw = row;
+			byte col = column;
+			
+			for (char i = 'a'; i <='h'; i++) {
+				rw = (char)i;		
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+				}
+			}
+			col = column;
+			rw = row;
+			for (byte j = 0; j < 8; j++) {
+				col = (byte)j;
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+				}
+			}
+			rw = row;
+			col = column;
+			for (int i = 0; i < 8; i++) {
+				rw = (char)(rw - 1);
+				col = (byte)(col + 1);
+				
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+				}
+			}
+			rw = row;
+			col = column;
+
+			for (int i = 1; i <= 8; i++) {
+				rw = (char)(rw + 1);
+				col = (byte)(col + 1);
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+				}
+			}
+			 rw = row;
+			 col = column;
+
+			for (int i = 1; i <= 8; i++) {
+				rw = (char)(rw + 1);
+				col = (byte)(col - 1);
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+				}
+			}
+
+			 rw = row;
+			 col = column;
+			for (int i = 1; i <= 8; i++) {
+				rw = (char)(rw - 1);
+				col = (byte)(col - 1);
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].mark();
+
+				}
+			}
+		}
+		@Override 
+		public void unmarkReachableFields() {
+			char rw = row;
+			byte col = column;
+			
+			for (char i = 'a'; i <='h'; i++) {
+				rw = (char)i;		
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+				}
+			}
+			col = column;
+			rw = row;
+			for (byte j = 0; j < 8; j++) {
+				col = (byte)j;
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+				}
+			}
+			rw = row;
+			col = column;
+			for (int i = 0; i < 8; i++) {
+				rw = (char)(rw - 1);
+				col = (byte)(col + 1);
+				
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+				}
+			}
+			rw = row;
+			col = column;
+
+			for (int i = 1; i <= 8; i++) {
+				rw = (char)(rw + 1);
+				col = (byte)(col + 1);
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+				}
+			}
+			 rw = row;
+			 col = column;
+
+			for (int i = 1; i <= 8; i++) {
+				rw = (char)(rw + 1);
+				col = (byte)(col - 1);
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+				}
+			}
+
+			 rw = row;
+			 col = column;
+			for (int i = 1; i <= 8; i++) {
+				rw = (char)(rw - 1);
+				col = (byte)(col - 1);
+				if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+						&&Chessboard.this.isValidField(rw, col)){
+					int r = rw - FIRST_ROW;
+					int c = col - FIRST_COLUMN;
+					Chessboard.this.fields[r][c].unmark();
+
+				}
+			}
+		}
+	}
+	
+/**********************The King Class Strts*****************************************/
+	public class King extends Chesspiece {
+
+		protected King(char color, char name) { 
+			super(color, name);
+		}
+		@Override 
+		public void markReachableFields() {
+			for (int i = 0; i < 8; i++) {
+				char rw = row;
+				byte col = column;
+
+					switch(i){
+					case 0:
+						rw = (char)(rw - 1);
+						col = (byte)(col + 1);
+						break;
+					case 1:
+						rw = (char)rw;
+						col = (byte)(col + 1);
+						break;
+					case 2:
+						rw = (char)(rw + 1);
+						col = (byte)(col + 1);
+						break;
+					case 3:
+						rw = (char)(rw + 1);
+						col = (byte)col;
+						break;
+					case 4:
+						rw = (char)(rw + 1);
+						col = (byte)(col - 1);
+						break;
+					case 5:
+						rw = (char)rw;
+						col = (byte)(col - 1);
+						break;
+					case 6:
+						rw = (char)(rw - 1);
+						col = (byte)(col - 1);
+						break;
+					case 7:
+						rw = (char)(rw - 1);
+						col = (byte)col;
+						break;
+					}
+					if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+							&&Chessboard.this.isValidField(rw, col)){
+						int r = rw - FIRST_ROW;
+						int c = col - FIRST_COLUMN;
+						Chessboard.this.fields[r][c].mark();
+					}
+				}
+			}
+		@Override 
+		public void unmarkReachableFields() {
+			for (int i = 0; i < 8; i++) {
+				char rw = row;
+				byte col = column;
+
+					switch(i){
+					case 0:
+						rw = (char)(rw - 1);
+						col = (byte)(col + 1);
+						break;
+					case 1:
+						rw = (char)rw;
+						col = (byte)(col + 1);
+						break;
+					case 2:
+						rw = (char)(rw + 1);
+						col = (byte)(col + 1);
+						break;
+					case 3:
+						rw = (char)(rw + 1);
+						col = (byte)col;
+						break;
+					case 4:
+						rw = (char)(rw + 1);
+						col = (byte)(col - 1);
+						break;
+					case 5:
+						rw = (char)rw;
+						col = (byte)(col - 1);
+						break;
+					case 6:
+						rw = (char)(rw - 1);
+						col = (byte)(col - 1);
+						break;
+					case 7:
+						rw = (char)(rw - 1);
+						col = (byte)col;
+						break;
+					}
+					if ((rw >= 'a' && rw <= 'h') && (col >= 1 && col <= 8)
+							&&Chessboard.this.isValidField(rw, col)){
+						int r = rw - FIRST_ROW;
+						int c = col - FIRST_COLUMN;
+						Chessboard.this.fields[r][c].unmark();
+					}
+			}
+		}  
+	}
+}
+
+
+
