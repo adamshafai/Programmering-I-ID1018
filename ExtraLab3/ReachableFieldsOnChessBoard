@@ -1,0 +1,53 @@
+package ExtraLab3;
+
+public class ReachableFieldsOnChessBoard {
+	public static void main(String []args){
+		Chessboard chessBoard = new Chessboard ();
+		
+	
+	//	try{
+			Chessboard.Chesspiece[] pieces = new Chessboard.Chesspiece[6]; 
+
+
+/*Thanks to the polymorphism we dont need to make an object of evrey piceses sepratly
+*and becouse that we know that the Pawn is a Chesspiece and it inherits all 
+*the behavier of the Chesspiece and can override its methods	 		
+*/	
+	pieces[0] = chessBoard.new Pawn ('w', 'P');
+	pieces[1] = chessBoard.new Knight('w', 'N');
+	pieces[2] = chessBoard.new Rook ('b', 'R');
+	pieces[3] = chessBoard.new Bishop ('w', 'B'); 
+	pieces[4] = chessBoard.new Queen ('w', 'Q');
+	pieces[5] = chessBoard.new King ('b', 'K'); 
+	
+	
+	
+	pieces[0].moveTo('a', (byte)1);
+	pieces[1].moveTo('d', (byte)5);
+	pieces[2].moveTo('d', (byte)2);
+	pieces[3].moveTo('f', (byte)2);
+	pieces[4].moveTo('d', (byte)4);
+	pieces[5].moveTo('g', (byte)7);
+
+
+
+	for (int i = 0; i< 6; i++){
+		try{
+		System.out.println (chessBoard + "\n");
+		pieces[i].markReachableFields();
+		Thread.sleep(3000);
+		
+		System.out.println (chessBoard + "\n");
+		pieces[i].unmarkReachableFields();
+		Thread.sleep(3000);
+		}
+		
+		catch(InterruptedException e){
+			e.printStackTrace();
+		}
+	}
+}
+}
+	
+
+
