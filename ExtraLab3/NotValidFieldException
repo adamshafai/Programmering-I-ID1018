@@ -1,0 +1,21 @@
+package ExtraLab3;
+
+public class NotValidFieldException extends IllegalArgumentException 
+{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public NotValidFieldException(char row,  byte column) 
+	{
+		super();
+	}
+
+	public NotValidFieldException(String message) {
+		
+		super(message);
+		
+	}
+}
