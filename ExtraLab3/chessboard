@@ -1,3 +1,5 @@
+// the code template is written by Fadil Galjic 
+// some methods for the chesspiece are written by Adam Shafai
 package ExtraLab3;
 public class Chessboard {
 
